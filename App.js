@@ -3,7 +3,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { AppProvider } from './src/context/AppContext';
 import DashboardScreen from './src/screens/DashboardScreen';
 import SobraScreen from './src/screens/SobraScreen';
@@ -67,13 +67,22 @@ export default function App() {
           <Stack.Screen
             name="IncomeAllocation"
             component={IncomeAllocationScreen}
-            options={{
+            options={({ navigation }) => ({
               headerShown: true,
-              title: 'Log Income',
+              title: 'Log Weekly Income',
               headerStyle: { backgroundColor: '#0f0f1a' },
               headerTintColor: '#a78bfa',
-              headerTitleStyle: { fontWeight: '700' },
-            }}
+              headerTitleStyle: { color: '#fff', fontWeight: '800' },
+              headerLeft: () => (
+                <TouchableOpacity 
+                  onPress={() => navigation.navigate('Tabs', { screen: 'Dashboard' })} 
+                  style={{ marginLeft: 0, paddingRight: 20, paddingVertical: 5 }}
+                >
+                  <Text style={{ color: '#a78bfa', fontSize: 32, fontWeight: '300', marginTop: -5 }}>‹</Text>
+                </TouchableOpacity>
+              ),
+              headerShadowVisible: false,
+            })}
           />
         </Stack.Navigator>
       </NavigationContainer>
