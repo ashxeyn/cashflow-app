@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  FlatList, StyleSheet, Alert,
+  FlatList, StyleSheet, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
@@ -126,7 +126,7 @@ export default function SobraScreen() {
                   style={styles.editBtn}
                   onPress={() => {
                     const msg = `Delete "${item.label}"? This will return ₱${(item.funded || 0).toFixed(2)} to your savings balance.`;
-                    if (require('react-native').Platform.OS === 'web') {
+                    if (Platform.OS === 'web') {
                       if (window.confirm(msg)) {
                         actions.removeSavingsGoal(item.id);
                       }

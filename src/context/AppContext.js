@@ -282,10 +282,7 @@ export function AppProvider({ children }) {
 
     removeSavingsGoal: async (id) => {
       await api.deleteSaving(id);
-      dispatch({
-        type: 'SET_SAVINGS',
-        payload: state.sobraWishlist.filter((i) => i.id !== id),
-      });
+      await actions.refreshState();
     },
   };
 
