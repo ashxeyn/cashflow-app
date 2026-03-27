@@ -61,41 +61,4 @@ router.get('/logged-weeks', async (req, res) => {
   }
 });
 
-// POST /api/allocate-income/reset-all — factory reset as requested by user
-router.post('/reset-all', async (req, res) => {
-  const conn = await db.getConnection();
-  try {
-    await conn.beginTransaction();
-    // Reset state to original initial values
-    await conn.query(`
-      UPDATE app_state SET
-        phase = 1,
-        sobra_balance = 0,
-        contingency_total = 0,
-        monthsary_total = 0,
-        credit_debt_remaining = 0,
-        checklist_active = 0,
-        fifteenth_start_date = NULL,
-        credit_total_debt = 4000.00,
-        fifteenth_months_done = 0,
-        credit_paid_this_month = 0,
-        credit_month_reset = CURDATE()
-      WHERE id = 1
-    `);
-    // Clear dynamic tables (using correct table names)
-    await conn.query('DELETE FROM transactions');
-    await conn.query('DELETE FROM checklist'); 
-    await conn.query('DELETE FROM savings_goals');
-    await conn.query('DELETE FROM gemini_messages');
-
-    await conn.commit();
-    res.json({ success: true });
-  } catch (e) {
-    await conn.rollback();
-    res.status(500).json({ error: e.message });
-  } finally {
-    conn.release();
-  }
-});
-
 module.exports = router;

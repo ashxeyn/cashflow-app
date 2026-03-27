@@ -38,7 +38,6 @@ export const api = {
 
   // Allocate / Reset
   getLoggedWeeks: ()             => req('GET',   '/api/allocate-income/logged-weeks'),
-  resetAllData:   ()             => req('POST',  '/api/allocate-income/reset-all'),
 
   // Credit
   getCreditMonthly: ()           => req('GET',   '/api/credit/monthly'),
