@@ -116,13 +116,29 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-// DELETE a savings goal
+// DELETE a savings goal — refund funds to sobra_balance
 router.delete('/:id', async (req, res) => {
+  const conn = await db.getConnection();
   try {
-    await db.query('DELETE FROM savings_goals WHERE id = ?', [req.params.id]);
-    res.json({ success: true });
+    const [rows] = await conn.query('SELECT funded_amount FROM savings_goals WHERE id = ?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Goal not found' });
+    
+    const refund = parseFloat(rows[0].funded_amount) || 0;
+    await conn.beginTransaction();
+    
+    // Return money to sobra balance
+    if (refund > 0) {
+      await conn.query('UPDATE app_state SET sobra_balance = sobra_balance + ? WHERE id = 1', [refund]);
+    }
+    
+    await conn.query('DELETE FROM savings_goals WHERE id = ?', [req.params.id]);
+    await conn.commit();
+    res.json({ success: true, refunded: refund });
   } catch (e) {
+    await conn.rollback();
     res.status(500).json({ error: e.message });
+  } finally {
+    conn.release();
   }
 });
 

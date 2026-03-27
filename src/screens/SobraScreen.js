@@ -124,16 +124,19 @@ export default function SobraScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.editBtn}
-                  onPress={() =>
-                    Alert.alert(
-                      'Delete Goal',
-                      `Delete "${item.label}"? This cannot be undone.`,
-                      [
+                  onPress={() => {
+                    const msg = `Delete "${item.label}"? This will return ₱${(item.funded || 0).toFixed(2)} to your savings balance.`;
+                    if (require('react-native').Platform.OS === 'web') {
+                      if (window.confirm(msg)) {
+                        actions.removeSavingsGoal(item.id);
+                      }
+                    } else {
+                      Alert.alert('Delete Goal', msg, [
                         { text: 'Cancel', style: 'cancel' },
                         { text: 'Delete', style: 'destructive', onPress: () => actions.removeSavingsGoal(item.id) },
-                      ]
-                    )
-                  }
+                      ]);
+                    }
+                  }}
                 >
                   <Text style={styles.deleteBtnText}>🗑</Text>
                 </TouchableOpacity>
