@@ -69,7 +69,7 @@ export default function App() {
             component={IncomeAllocationScreen}
             options={({ navigation }) => ({
               headerShown: true,
-              title: 'Log Weekly Income',
+              title: '',
               headerStyle: { backgroundColor: '#0f0f1a' },
               headerTintColor: '#a78bfa',
               headerTitleStyle: { color: '#fff', fontWeight: '800' },
