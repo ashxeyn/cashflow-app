@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView,
-  StyleSheet, TextInput, Alert, Modal,
+  StyleSheet, TextInput, Alert, Modal, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
+import { api } from '../utils/api';
 import CalendarStrip from '../components/CalendarStrip';
 import WindfallModal from '../components/WindfallModal';
 import SpendModal from '../components/SpendModal';
@@ -34,48 +35,49 @@ export default function DashboardScreen({ navigation }) {
     const val = parseFloat(newDebtInput);
     if (isNaN(val) || val <= 0) return;
 
-    // If currently debt free, this is definitely a new debt — reset paid amount
-    // If not debt free, ask if it's a correction or new debt
-    if (isDebtFree) {
-      await fetch(`${BASE}/api/credit/total`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ total: val, resetPaid: true }),
-      });
-      setEditingDebt(false);
-      fetchCredit();
-    } else {
-      Alert.alert(
-        'Update Debt',
-        'Is this a new debt or correcting the current total?',
-        [
-          {
-            text: 'New Debt (reset progress)',
-            onPress: async () => {
-              await fetch(`${BASE}/api/credit/total`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ total: val, resetPaid: true }),
-              });
-              setEditingDebt(false);
-              fetchCredit();
-            },
-          },
-          {
-            text: 'Correction only',
-            onPress: async () => {
-              await fetch(`${BASE}/api/credit/total`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ total: val, resetPaid: false }),
-              });
-              setEditingDebt(false);
-              fetchCredit();
-            },
-          },
-          { text: 'Cancel', style: 'cancel' },
-        ]
-      );
+    try {
+      if (isDebtFree) {
+        await api.updateCreditTotal(val, true);
+        setEditingDebt(false);
+        fetchCredit();
+      } else {
+        // Simple confirmation for web/iOS
+        // On web, Alert.alert with 3 buttons is often unreliable. 
+        // We'll ask "Is this a new debt?"
+        if (Platform.OS === 'web') {
+          const isNew = window.confirm('Is this a brand new debt (Reset progress to ₱0)? OK for New, Cancel for Just a Correction.');
+          await api.updateCreditTotal(val, isNew);
+          setEditingDebt(false);
+          fetchCredit();
+        } else {
+          Alert.alert(
+            'Update Debt',
+            'Is this a new debt or correcting the current total?',
+            [
+              {
+                text: 'New Debt (reset)',
+                onPress: async () => {
+                  await api.updateCreditTotal(val, true);
+                  setEditingDebt(false);
+                  fetchCredit();
+                },
+              },
+              {
+                text: 'Correction only',
+                onPress: async () => {
+                  await api.updateCreditTotal(val, false);
+                  setEditingDebt(false);
+                  fetchCredit();
+                },
+              },
+              { text: 'Cancel', style: 'cancel' },
+            ]
+          );
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update debt', e);
+      if (Platform.OS === 'web') window.alert('Failed to update debt: ' + e.message);
     }
   };
 
@@ -209,8 +211,49 @@ export default function DashboardScreen({ navigation }) {
           <Text style={styles.spendBtnText}> Spend / Withdraw</Text>
         </TouchableOpacity>
 
-        <WindfallModal visible={windfallVisible} onClose={() => setWindfallVisible(false)} />
-        <SpendModal visible={spendVisible} onClose={() => setSpendVisible(false)} />
+        <TouchableOpacity
+          style={styles.resetBtn}
+          onPress={() => {
+            const msg = 'Factory Reset: This will PERMANENTLY delete all history, savings, and reset all balances to ₱0. Are you absolutely sure?';
+            if (Platform.OS === 'web') {
+              if (window.confirm(msg)) {
+                api.resetAllData().then(() => {
+                  actions.refreshState();
+                  fetchCredit();
+                  window.alert('Database cleared!');
+                });
+              }
+            } else {
+              Alert.alert('RESET ALL DATA', msg, [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'RESET EVERYTHING', style: 'destructive', onPress: async () => {
+                  await api.resetAllData();
+                  actions.refreshState();
+                  fetchCredit();
+                }}
+              ]);
+            }
+          }}
+        >
+          <Text style={styles.resetBtnText}>Clear All App Data (Reset)</Text>
+        </TouchableOpacity>
+
+        <WindfallModal 
+          visible={windfallVisible} 
+          onClose={() => {
+            setWindfallVisible(false);
+            fetchCredit();
+            actions.refreshState?.();
+          }} 
+        />
+        <SpendModal 
+          visible={spendVisible} 
+          onClose={() => {
+            setSpendVisible(false);
+            fetchCredit();
+            actions.refreshState?.();
+          }} 
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -253,6 +296,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 10, borderWidth: 1, borderColor: '#f87171',
   },
   spendBtnText: { color: '#f87171', fontWeight: '600', fontSize: 15 },
+
+  resetBtn: {
+    paddingVertical: 12, alignItems: 'center', marginTop: 20,
+    borderWidth: 1, borderColor: 'rgba(248, 113, 113, 0.2)', borderRadius: 12,
+  },
+  resetBtnText: { color: '#ef4444', fontSize: 13, fontWeight: '600', opacity: 0.8 },
 
   creditCard: { backgroundColor: '#1e1e2e', borderRadius: 16, padding: 16, marginBottom: 16 },
   creditCardFree: { borderWidth: 1, borderColor: '#34d399', alignItems: 'center', paddingVertical: 20 },

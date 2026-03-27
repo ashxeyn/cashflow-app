@@ -20,6 +20,10 @@ router.get('/', async (req, res) => {
       sql += ' AND type = ?';
       params.push(req.query.type);
     }
+    if (req.query.week_key) {
+      sql += ' AND week_key = ?';
+      params.push(req.query.week_key);
+    }
 
     sql += ' ORDER BY created_at DESC LIMIT 200';
 

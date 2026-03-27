@@ -21,7 +21,12 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "Cash Flow",
+      "shortName": "Cash Flow",
+      "themeColor": "#0f0f1a",
+      "backgroundColor": "#0f0f1a",
+      "display": "standalone"
     }
   }
 }

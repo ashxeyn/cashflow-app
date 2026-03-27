@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../context/AppContext';
+import { api } from '../utils/api';
 
 const MONTHSARY        = 50;
 const FIFTEENTH_BUFFER = 50;
@@ -28,16 +29,7 @@ function getWeekKey(date = new Date()) {
 export default function IncomeAllocationScreen({ navigation }) {
   const { state, actions } = useApp();
 
-  const fifteenthDone = isFifteenthDone(state.fifteenthStartDate);
-  const autoDeduct    = fifteenthDone ? MONTHSARY + CONTINGENCY : MONTHSARY + FIFTEENTH_BUFFER + CONTINGENCY;
-  const creditTotal    = creditStats?.creditTotalDebt || 4000;
-  const creditPaid     = Math.min(state.creditDebtRemaining || 0, creditTotal);
-  const creditLeft     = Math.max(0, creditTotal - creditPaid);
-  const creditProgress = creditPaid / creditTotal;
-
-  const now            = new Date();
-  const currentWeekKey = getWeekKey(now);
-
+  // State
   const [income, setIncome]               = useState('');
   const [schoolFund, setSchoolFund]       = useState('');
   const [creditInput, setCreditInput]     = useState('');
@@ -48,15 +40,27 @@ export default function IncomeAllocationScreen({ navigation }) {
   const [alreadyLogged, setAlreadyLogged] = useState(false);
   const [checkingLog, setCheckingLog]     = useState(true);
 
+  // Derived
+  const now            = new Date();
+  const currentWeekKey = getWeekKey(now);
+  const fifteenthDone  = isFifteenthDone(state.fifteenthStartDate);
+  const autoDeduct     = fifteenthDone ? MONTHSARY + CONTINGENCY : MONTHSARY + FIFTEENTH_BUFFER + CONTINGENCY;
+  const creditTotal    = creditStats?.creditTotalDebt || 4000;
+  const creditPaid     = Math.min(state.creditDebtRemaining || 0, creditTotal);
+  const creditLeft     = Math.max(0, creditTotal - creditPaid);
+  const creditProgress = creditTotal > 0 ? creditPaid / creditTotal : 0;
+
   useEffect(() => {
-    const BASE = process.env.EXPO_PUBLIC_API_URL;
     Promise.all([
-      fetch(`${BASE}/api/allocate-income/logged-weeks`).then(r => r.json()),
-      fetch(`${BASE}/api/credit/monthly`).then(r => r.json()),
-    ]).then(([weeks, credit]) => {
-      setAlreadyLogged(weeks.some(r => r.week_key === currentWeekKey));
+      api.getTransactions({ week_key: currentWeekKey }),
+      api.getCreditMonthly(),
+    ]).then(([txs, credit]) => {
+      // If any transaction exists for this week key, consider it logged
+      setAlreadyLogged((txs || []).length > 0);
       setCreditStats(credit);
-    }).catch(() => {}).finally(() => setCheckingLog(false));
+    }).catch((err) => {
+      console.error('Initial fetch fail', err);
+    }).finally(() => setCheckingLog(false));
   }, []);
 
   const weeklyIncome  = parseFloat(income) || 0;

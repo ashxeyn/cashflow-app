@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   progressBg: { height: 6, backgroundColor: '#2d2d3f', borderRadius: 3, marginBottom: 4 },
   progressFill: { height: 6, backgroundColor: '#7c3aed', borderRadius: 3 },
   progressText: { color: '#6b7280', fontSize: 12, marginBottom: 8 },
-  fundRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  fundRow: { flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
   fundInput: {
     flex: 1, backgroundColor: '#2d2d3f', color: '#fff', borderRadius: 8,
     paddingHorizontal: 10, paddingVertical: 7, fontSize: 14,

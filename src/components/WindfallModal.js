@@ -95,14 +95,13 @@ export default function WindfallModal({ visible, onClose }) {
                       onChangeText={setter}
                       placeholderTextColor="#4b5563"
                     />
-                    {remaining > 0 && (
-                      <TouchableOpacity
-                        style={styles.fillBtn}
-                        onPress={() => fillRemaining(setter, value)}
-                      >
-                        <Text style={styles.fillBtnText}>+rest</Text>
-                      </TouchableOpacity>
-                    )}
+                    <TouchableOpacity
+                      style={[styles.fillBtn, remaining <= 0 && { opacity: 0 }]}
+                      onPress={() => fillRemaining(setter, value)}
+                      disabled={remaining <= 0}
+                    >
+                      <Text style={styles.fillBtnText}>+rest</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               ))}
@@ -139,22 +138,22 @@ const styles = StyleSheet.create({
   subtitle: { color: '#6b7280', fontSize: 13, marginBottom: 16 },
 
   totalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  totalLabel: { color: '#e2e8f0', fontSize: 15, fontWeight: '600' },
-  totalInputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2d2d3f', borderRadius: 10, paddingHorizontal: 12 },
+  totalLabel: { color: '#e2e8f0', fontSize: 15, fontWeight: '600', flexShrink: 1 },
+  totalInputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2d2d3f', borderRadius: 10, paddingHorizontal: 12, flexShrink: 1, maxWidth: '55%' },
   peso: { color: '#a78bfa', fontSize: 18, fontWeight: '700', marginRight: 4 },
-  totalInput: { color: '#fff', fontSize: 22, fontWeight: '700', paddingVertical: 10, minWidth: 100, textAlign: 'right' },
+  totalInput: { color: '#fff', fontSize: 22, fontWeight: '700', paddingVertical: 10, minWidth: 80, flex: 1, textAlign: 'right' },
 
   divider: { height: 1, backgroundColor: '#2d2d3f', marginVertical: 16 },
   distributeLabel: { color: '#a78bfa', fontSize: 13, fontWeight: '700', marginBottom: 12 },
 
   inputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  inputLabelWrap: { flex: 1 },
+  inputLabelWrap: { flex: 1, paddingRight: 8 },
   inputLabel: { color: '#e2e8f0', fontSize: 14 },
   inputSub: { color: '#4b5563', fontSize: 11, marginTop: 1 },
-  inputRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  inputRight: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1, maxWidth: '55%' },
   input: {
     backgroundColor: '#2d2d3f', color: '#fff', borderRadius: 8,
-    paddingHorizontal: 12, paddingVertical: 8, width: 90, textAlign: 'right', fontSize: 15,
+    paddingHorizontal: 12, paddingVertical: 8, width: 90, flexShrink: 1, textAlign: 'right', fontSize: 15,
   },
   fillBtn: { backgroundColor: '#2d2d3f', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 6 },
   fillBtnText: { color: '#a78bfa', fontSize: 11, fontWeight: '600' },

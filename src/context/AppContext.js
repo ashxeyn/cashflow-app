@@ -155,16 +155,35 @@ export function AppProvider({ children }) {
 
     logWindfall: async ({ debtCrusher, sobraAmount, bufferAmount }) => {
       const total = debtCrusher + sobraAmount + bufferAmount;
-      const newDebt   = Math.max(0, state.creditDebtRemaining - debtCrusher);
+      const newDebt   = state.creditDebtRemaining + debtCrusher;
       const newSobra  = state.sobraBalance + sobraAmount;
       const newBuffer = state.contingencyTotal + bufferAmount;
 
+      let newPaidThisMonth = 0;
+      if (debtCrusher > 0) {
+        try {
+          const url = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+          const creditRes = await fetch(`${url}/api/credit/monthly`);
+          if (creditRes.ok) {
+            const creditData = await creditRes.json();
+            newPaidThisMonth = creditData.paidThisMonth + debtCrusher;
+          }
+        } catch (e) {
+          console.error('Failed to grab monthly credit for windfall', e);
+        }
+      }
+
+      const updatePayload = {
+        credit_debt_remaining: newDebt,
+        sobra_balance: newSobra,
+        contingency_total: newBuffer,
+      };
+      if (debtCrusher > 0 && newPaidThisMonth > 0) {
+        updatePayload.credit_paid_this_month = newPaidThisMonth;
+      }
+
       await Promise.all([
-        api.patchState({
-          credit_debt_remaining: newDebt,
-          sobra_balance: newSobra,
-          contingency_total: newBuffer,
-        }),
+        api.patchState(updatePayload),
         api.logTransaction({ type: 'windfall', label: 'Windfall distributed', amount: total,
           meta: { debtCrusher, sobraAmount, bufferAmount } }),
       ]);

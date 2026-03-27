@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { api } from '../utils/api';
 
 const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const MONTHS = ['January','February','March','April','May','June',
@@ -20,16 +21,15 @@ export default function CalendarStrip() {
   const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
   const currentWeek    = Math.ceil(today.getDate() / 7);
 
-  const fetchLogs = () => {
-    const BASE = process.env.EXPO_PUBLIC_API_URL;
-    fetch(`${BASE}/api/allocate-income/logged-weeks`)
-      .then(r => r.json())
-      .then(rows => {
-        const map = {};
-        rows.forEach(r => { if (r.week_key) map[r.week_key] = r.type; });
-        setLoggedWeeks(map);
-      })
-      .catch(() => {});
+  const fetchLogs = async () => {
+    try {
+      const rows = await api.getLoggedWeeks();
+      const map = {};
+      rows.forEach(r => { if (r.week_key) map[r.week_key] = r.type; });
+      setLoggedWeeks(map);
+    } catch (e) {
+      console.error('Failed to fetch calendar logs', e);
+    }
   };
 
   // Refresh every time the dashboard comes into focus

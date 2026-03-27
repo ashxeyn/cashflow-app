@@ -36,6 +36,14 @@ export const api = {
   },
   logTransaction:  (data)      => req('POST',  '/api/transactions', data),
 
+  // Allocate / Reset
+  getLoggedWeeks: ()             => req('GET',   '/api/allocate-income/logged-weeks'),
+  resetAllData:   ()             => req('POST',  '/api/allocate-income/reset-all'),
+
+  // Credit
+  getCreditMonthly: ()           => req('GET',   '/api/credit/monthly'),
+  updateCreditTotal: (total, resetPaid) => req('PATCH', '/api/credit/total', { total, resetPaid }),
+
   // Gemini chat
   getGeminiMessages: ()              => req('GET',    '/api/gemini'),
   saveGeminiMessage: (role, text)    => req('POST',   '/api/gemini', { role, text }),
