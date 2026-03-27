@@ -216,20 +216,27 @@ export default function DashboardScreen({ navigation }) {
           onPress={() => {
             const msg = 'Factory Reset: This will PERMANENTLY delete all history, savings, and reset all balances to ₱0. Are you absolutely sure?';
             if (Platform.OS === 'web') {
-              if (window.confirm(msg)) {
+                if (window.confirm(msg)) {
                 api.resetAllData().then(() => {
                   actions.refreshState();
                   fetchCredit();
                   window.alert('Database cleared!');
+                }).catch(err => {
+                  console.error(err);
+                  window.alert('Reset failed: ' + err.message);
                 });
               }
             } else {
               Alert.alert('RESET ALL DATA', msg, [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'RESET EVERYTHING', style: 'destructive', onPress: async () => {
-                  await api.resetAllData();
-                  actions.refreshState();
-                  fetchCredit();
+                  try {
+                    await api.resetAllData();
+                    actions.refreshState();
+                    fetchCredit();
+                  } catch (err) {
+                    Alert.alert('Error', 'Reset failed: ' + err.message);
+                  }
                 }}
               ]);
             }
