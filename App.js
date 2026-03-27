@@ -76,9 +76,25 @@ export default function App() {
               headerLeft: () => (
                 <TouchableOpacity 
                   onPress={() => navigation.navigate('Tabs', { screen: 'Dashboard' })} 
-                  style={{ marginLeft: 0, paddingRight: 20, paddingVertical: 5 }}
+                  style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center', 
+                    paddingLeft: 10,
+                    paddingRight: 30,
+                    paddingVertical: 10,
+                  }}
                 >
-                  <Text style={{ color: '#a78bfa', fontSize: 32, fontWeight: '300', marginTop: -5 }}>‹</Text>
+                  <View style={{
+                    width: 12,
+                    height: 12,
+                    borderLeftWidth: 3,
+                    borderBottomWidth: 3,
+                    borderColor: '#a78bfa',
+                    transform: [{ rotate: '45deg' }],
+                    marginRight: 5,
+                    marginTop: 0
+                  }} />
+                  <Text style={{ color: '#a78bfa', fontSize: 16, fontWeight: '600' }}>Back</Text>
                 </TouchableOpacity>
               ),
               headerShadowVisible: false,
